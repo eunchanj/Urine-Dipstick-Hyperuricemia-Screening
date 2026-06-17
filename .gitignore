@@ -1,0 +1,70 @@
+# --- Patient data: NEVER COMMIT ---
+*.csv
+*.sas7bdat
+*.xlsx
+*.xls
+*.parquet
+*.feather
+*.dta
+*.sav
+
+# Allow specific lightweight CSV examples if explicitly under examples/
+!examples/sample_input.csv
+
+# Raw data directories
+00_data/
+00_data_raw/
+data/raw/
+data/processed/
+data/knhanes_*/
+
+# Large model files (use GitHub Release or Git LFS instead)
+*.joblib
+*.pkl
+*.pickle
+models/*.joblib
+models/*.pkl
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.installed.cfg
+*.egg
+.eggs/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- Logs / temp ---
+*.log
+*.tmp
+logs/
+tmp/
+
+# --- Secrets ---
+.env
+.env.local
+credentials.json
+*.pem
+*.key
