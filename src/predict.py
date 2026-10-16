@@ -1,97 +1,60 @@
-"""
-Inference example for the trained calibrated voting ensemble.
+"""Score records with one of the submitted model files (bestmodel_v4; not distributed with this repository; see
+models/README.md). Kept for the record: the revised article reports the retrained models (12 inputs, no leukocyte
+esterase; revision_R1/train_v5.py), which this script does not score.
+
+Each submitted model is a scikit-learn CalibratedClassifierCV (isotonic, 5-fold) around a soft-voting ensemble of
+LightGBM, XGBoost and CatBoost (src/train_uric.py). It expects exactly the 13 input columns of
+train_uric.FEATURES_13, on the development coding described in docs/feature_dictionary.md:
+
+    ua_glucose, ua_protein, ua_ketone, ua_bilirubin, ua_blood, ua_urobilinogen, ua_nitrite, ua_wbc(s),
+    ua_pH, ua_sg, age, male, bmi_unified
 
 Usage
------
-Single record from JSON:
-    python predict.py --model models/uric70_calibrated_voting.joblib --json '{"ua_glucose":0,"ua_protein":0,"ua_ketone":0,"ua_bilirubin":0,"ua_blood":0,"ua_urobilinogen":0,"ua_nitrite":0,"ua_wbc(s)":0.321,"ua_pH":5.5,"ua_sg":1.020,"age":55,"male":1,"BMI":26.0}'
-
-Batch from CSV:
-    python predict.py --model models/uric70_calibrated_voting.joblib --csv input.csv --out predictions.csv
-
-Decision threshold options
---------------------------
-Default thresholds are the Youden-optimized thresholds determined on the
-internal test set (see manuscript Table 2):
-
-    uric70   →  0.130
-    uric90   →  0.020
-    uric100  →  0.005
-
-Use --threshold to override (e.g., for high-sensitivity screening).
+    python src/predict.py --model <dir>/uric_hyper_70_calibrated_voting.joblib --csv input.csv [--out preds.csv]
+    python src/predict.py --model <dir>/uric_severe_9_calibrated_voting.joblib --json '{"ua_glucose": 0, ...}'
+    --threshold T adds a binary column (predicted probability >= T). No default threshold is built in: the
+    submitted models were trained on data with the errors listed in README.md ("History of this repository"),
+    and they over-predicted in KNHANES adults (response letter, correction C5).
 """
-from __future__ import annotations
-
 import argparse
 import json
+import os
 import sys
-from pathlib import Path
 
 import joblib
 import pandas as pd
 
-from data_utils import BASE_FEATURES
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from train_uric import FEATURES_13  # noqa: E402
 
 
-YOUDEN_THRESHOLDS = {
-    "uric70":  0.130,
-    "uric90":  0.020,
-    "uric100": 0.005,
-}
-
-
-def _infer_target(model_path: str) -> str | None:
-    stem = Path(model_path).stem.lower()
-    for key in YOUDEN_THRESHOLDS:
-        if key in stem:
-            return key
-    return None
-
-
-def predict(model, X: pd.DataFrame, threshold: float | None = None) -> pd.DataFrame:
-    """Return probability + binary call (if threshold provided)."""
-    missing = [f for f in BASE_FEATURES if f not in X.columns]
+def predict(model, X, threshold=None):
+    """Predicted probability for every row of X (and a flag if a threshold is given)."""
+    missing = [f for f in FEATURES_13 if f not in X.columns]
     if missing:
-        raise ValueError(f"Missing required features: {missing}")
-    proba = model.predict_proba(X[BASE_FEATURES])[:, 1]
-    out = pd.DataFrame({"predicted_probability": proba})
+        raise ValueError(f"missing input columns: {missing}")
+    out = pd.DataFrame({"predicted_probability": model.predict_proba(X[FEATURES_13])[:, 1]})
     if threshold is not None:
-        out["screen_positive"] = (proba >= threshold).astype(int)
+        out["flagged"] = (out["predicted_probability"] >= threshold).astype(int)
         out["threshold"] = threshold
     return out
 
 
 def main():
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--model", required=True, help="Path to calibrated joblib artifact")
-    p.add_argument("--csv", help="Input CSV with the 13 required features")
-    p.add_argument("--json", help="Single record as JSON string")
-    p.add_argument("--out", help="Output CSV (default: stdout)")
-    p.add_argument("--threshold", type=float, default=None,
-                   help="Decision threshold (default: target-specific Youden)")
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--model", required=True, help="path to a *_calibrated_voting.joblib file")
+    p.add_argument("--csv", help="input CSV with the 13 input columns")
+    p.add_argument("--json", help="one record as a JSON object")
+    p.add_argument("--out", help="output CSV (default: stdout)")
+    p.add_argument("--threshold", type=float, default=None, help="optional decision threshold")
     args = p.parse_args()
-
     if not args.csv and not args.json:
-        p.error("Provide either --csv or --json")
-
-    if args.json:
-        X = pd.DataFrame([json.loads(args.json)])
-    else:
-        X = pd.read_csv(args.csv)
-
-    model = joblib.load(args.model)
-    threshold = args.threshold
-    if threshold is None:
-        inferred = _infer_target(args.model)
-        if inferred:
-            threshold = YOUDEN_THRESHOLDS[inferred]
-            print(f"[info] Using Youden threshold for {inferred}: {threshold}",
-                  file=sys.stderr)
-
-    pred = predict(model, X, threshold=threshold)
+        p.error("provide --csv or --json")
+    X = pd.DataFrame([json.loads(args.json)]) if args.json else pd.read_csv(args.csv)
+    pred = predict(joblib.load(args.model), X, threshold=args.threshold)
     if args.out:
         pred.to_csv(args.out, index=False)
-        print(f"Wrote {len(pred)} predictions → {args.out}", file=sys.stderr)
+        print(f"wrote {len(pred)} predictions to {args.out}", file=sys.stderr)
     else:
         print(pred.to_csv(index=False))
 

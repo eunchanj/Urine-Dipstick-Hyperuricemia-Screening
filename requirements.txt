@@ -1,26 +1,27 @@
-# Core ML stack — versions pinned for reproducibility
-# Python 3.11 required
-numpy==1.26.4
-pandas==2.1.4
-scipy==1.11.4
-scikit-learn==1.3.2
-lightgbm==4.1.0
-xgboost==2.0.3
-catboost==1.2.5
+# Software environment of the retrained models and the revision analyses (JMIR Medical Informatics #107515, revision R1).
+# Recorded by revision_R1/train_v5.py in the "versions" key of the retrained models' config.json
+# (models/bestmodel_v5/config.json, 2026-10-16): Python 3.13.5 on arm64 macOS (Darwin).
+numpy==2.1.3
+pandas==2.2.3
+scikit-learn==1.6.1
+lightgbm==4.6.0
+xgboost==3.1.2
+catboost==1.2.8
 optuna==4.8.0
+joblib==1.4.2
 
-# SHAP for model interpretation
-shap==0.44.1
+# Stated in the manuscript (Methods, Software) together with the versions above.
+shap==0.48.0           # revision_R1/calc_importance_params.py
+statsmodels==0.14.4    # revision_R1/calc_calibration.py, calc_importance_params.py, calc_missing_bias.py
 
-# Visualization
-matplotlib==3.8.2
-seaborn==0.13.0
-
-# Notebooks (optional)
-jupyter==1.0.0
-ipykernel==6.27.1
-
-# Data I/O
-openpyxl==3.1.2
-pyreadstat==1.2.6
-joblib==1.3.2
+# Packages that the scripts also import but whose versions config.json does not record. The pins below were read on
+# 2026-10-17 from the interpreter that ran the analyses (it reports every recorded version above); treat them as the
+# versions most likely used, not as recorded ones.
+scipy==1.15.3          # revision_R1/common.py and several calc_*.py
+matplotlib==3.10.0     # figures (revision_R1/figstyle.py, make_figures.py, make_supplement.py)
+pyarrow==19.0.0        # parquet caches and the validated data cache (revision_R1/cohort.py, build_cohort_v2.py)
+pyreadstat==1.3.5      # raw KNHANES SAS files (revision_R1/cohort.py, knhanes_raw)
+threadpoolctl==3.5.0   # thread caps (revision_R1/calc_calibration.py, calc_followup.py)
+mpmath==1.3.0          # log10 of very small p values (revision_R1/calc_missing_bias.py)
+openpyxl==3.1.5        # xlsx sources of revision_R1/calc_followup.py (python-calamine is used instead if installed; it was not)
+python-docx==1.2.0     # optional render check in revision_R1/make_tables.py (also needs pandoc)

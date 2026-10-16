@@ -22,10 +22,11 @@ SOFTWARE.
 
 NOTE
 ----
-The methods implemented in this repository are the subject of a pending patent
-application filed with the Korean Intellectual Property Office
-(Application No. 10-2026-0067382; inventors: E.C.J., K.L., P.S.). This MIT
-License grants permission for academic, research, and non-commercial use of
-the code. Commercial deployment of the trained prediction models or derived
-products may require a separate license agreement; please contact the
-corresponding author (keyhone2@snu.ac.kr) for inquiries.
+ECJ, KL, PS, and JEK are inventors on a pending Korean patent application
+(10-2026-0130915, filed July 15, 2026; applicant: Seoul National University
+Hospital) for an apparatus and method that predict hyperuricemia risk from
+urinalysis information, which is related to this work. The MIT License above
+applies to the code in this repository. Commercial deployment of the trained
+prediction models or derived products may require a separate license
+agreement; please contact the corresponding author (keyhone2@snu.ac.kr) for
+inquiries.

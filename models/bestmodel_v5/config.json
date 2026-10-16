@@ -1,0 +1,87 @@
+{
+ "created": "2026-10-16 23:09:07",
+ "purpose": "JMIR MI #107515 R1 retrained models (decision 2026-10-16)",
+ "inputs": [
+  "ua_glucose",
+  "ua_protein",
+  "ua_ketone",
+  "ua_bilirubin",
+  "ua_blood",
+  "ua_urobilinogen",
+  "ua_nitrite",
+  "ua_pH",
+  "ua_sg",
+  "age",
+  "male",
+  "bmi_unified"
+ ],
+ "n_inputs": 12,
+ "targets": {
+  "uric_hyper_70": 7.0,
+  "uric_severe_9": 9.0,
+  "uric_severe_10": 10.0
+ },
+ "cohort": "cohort.dev_v2 (adults, first visit, same-day serum urate and BMI, nitrite recovered, '<1.0' = 0.5, complete 12 inputs + urate, one record per person)",
+ "cohort_steps": [
+  [
+   "persons with a first-visit urine test and a blood test within 14 days",
+   576800
+  ],
+  [
+   "aged 19 years or older at the urine test",
+   534887
+  ],
+  [
+   "serum urate measured on the urine-test day",
+   442176
+  ],
+  [
+   "BMI recorded on the urine-test day",
+   129541
+  ],
+  [
+   "all 9 dipstick fields and sex recorded (analytic cohort)",
+   129535
+  ]
+ ],
+ "n_persons": 129535,
+ "n_train": 103628,
+ "n_test": 25907,
+ "split": "cohort.split_v2: person-level 80/20, stratified on urate bands <7, 7-<9, 9-<10, >=10; seed 42; shared by the three thresholds",
+ "recipe": {
+  "source": "05_src/run_uric_module_v4.tune_and_build (copied)",
+  "n_trials_per_learner": 25,
+  "sampler": "optuna TPESampler(seed=42)",
+  "objective": "mean AUROC, StratifiedKFold(3, shuffle, 42)",
+  "search_spaces": {
+   "LightGBM": "n_estimators 100-300 step 50; max_depth 4-8; learning_rate 0.02-0.10 log; num_leaves 15-63; min_child_samples 10-100; reg_alpha 1e-3-1.0 log; reg_lambda 1e-3-1.0 log; random_state 42",
+   "XGBoost": "n_estimators 100-300 step 50; max_depth 4-8; learning_rate 0.02-0.10 log; subsample 0.7-1.0; colsample_bytree 0.7-1.0; min_child_weight 1-10; random_state 42; eval_metric logloss",
+   "CatBoost": "iterations 100-300 step 50; depth 4-8; learning_rate 0.02-0.10 log; l2_leaf_reg 1e-2-10 log; random_seed 42"
+  },
+  "ensemble": "VotingClassifier(soft, equal weights)",
+  "calibration": "CalibratedClassifierCV(method='isotonic', cv=5) = StratifiedKFold(5) without shuffling on the training rows in split order"
+ },
+ "sha256": {
+  "train_inputs": "d1659bbd597212b52e083b41a360167378560ceb66b945dbf4b67abb387d45c6",
+  "train_ids": "0788a4564878a2b3ecb0d51be0cc2716a1575a68aa5014b46b6c49e4a4d6ef4b",
+  "test_ids": "616cf175374afee9f8df19ee4d3b7b60b8337dd6ec2e4190ca923a34e4f6deec",
+  "code": {
+   "train_v5.py": "a1069fbbd8b5ac8556957f3c4025111d7a9b1f2c5adb4359cac8fe5a57000066",
+   "cohort.py": "c9939585cb256548da3a70ae5904505094623440801635f924b869619fcd2a87",
+   "run_uric_module_v4.py": "0fd6a56e5ea63649bea5f09c9964bb046b6771febbf6e54ee44f05c7d10487ef"
+  }
+ },
+ "versions": {
+  "python": "3.13.5",
+  "sklearn": "1.6.1",
+  "lightgbm": "4.6.0",
+  "xgboost": "3.1.2",
+  "catboost": "1.2.8",
+  "optuna": "4.8.0",
+  "numpy": "2.1.3",
+  "pandas": "2.2.3",
+  "joblib": "1.4.2",
+  "machine": "arm64",
+  "system": "Darwin"
+ }
+}
