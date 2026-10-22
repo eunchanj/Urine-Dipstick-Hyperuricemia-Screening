@@ -81,11 +81,9 @@ in the intended setting.
 │   ├── README.md                 what the model files are and why they are not here
 │   └── bestmodel_v5/config.json  record of the retrained models written before they were fitted (inputs, cohort
 │                                 steps, split, recipe, checksums, library versions); no model parameters
-├── docs/
-│   ├── tripod_ai_checklist.md    TRIPOD+AI and TRIPOD+AI for Abstracts checklists of the revised manuscript
-│   └── feature_dictionary.md     the 12 inputs, their coding and the KNHANES coding X1
-└── notebooks/                    unchanged from commit 2d8b5b0 and stale: not part of the code that produced the
-                                  results; do not run
+└── docs/
+    ├── tripod_ai_checklist.md    TRIPOD+AI and TRIPOD+AI for Abstracts checklists of the revised manuscript
+    └── feature_dictionary.md     the 12 inputs, their coding and the KNHANES coding X1
 ```
 
 ## How the code in `src/` relates to the retrained models

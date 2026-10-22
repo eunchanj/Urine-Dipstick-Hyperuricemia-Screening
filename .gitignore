@@ -18,12 +18,35 @@ data/raw/
 data/processed/
 data/knhanes_*/
 
-# Large model files (use GitHub Release or Git LFS instead)
+# Model files (not distributed; patent pending)
 *.joblib
 *.pkl
 *.pickle
 models/*.joblib
 models/*.pkl
+
+# --- Revision analysis outputs (written next to the scripts; never commit) ---
+revision_R1/*.csv
+revision_R1/*_log.txt
+revision_R1/cache/
+revision_R1/catboost_info/
+revision_R1/refit_noLE/
+revision_R1/figures/
+revision_R1/supplement/
+revision_R1/retired_v4/*_log.txt
+catboost_info/
+*.docx
+
+# --- Manuscript outputs: the generators in revision_R1/ write them to PROJ_U_REVISION_DIR, which defaults to the
+# repository root (never commit)
+/tables.md
+/tables_appendix_ge10.md
+/manuscript_uric_v3.0.md
+/manuscript_uric_v3.0_src.md
+/MA2_v2.1_extracted.md
+/figures/
+/supplement/
+/revision_notes/
 
 # --- Python ---
 __pycache__/
